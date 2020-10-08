@@ -76,7 +76,7 @@ export default class ListDetails extends React.Component {
       Toast.show('Note cannot be blank!', Toast.LONG);
     } else {
       let notesArr = JSON.parse(await AsyncStorage.getItem('notesArr')) == null ? [] : JSON.parse(await AsyncStorage.getItem('notesArr'))
-      console.log(notesArr.length)
+      
       let notesArrObj = {
         checkBoxChecked: false,
         noteText: this.state.noteText,
