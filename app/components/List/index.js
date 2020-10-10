@@ -1,10 +1,13 @@
 import React from 'react';
-import { View, Text, BackHandler, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, BackHandler, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Modal from 'react-native-modal';
 import { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-simple-radio-button';
 import AsyncStorage from '@react-native-community/async-storage';
 import Add from '../../assets/Images/add.svg'
+import Bin from '../../assets/Images/bin.svg'
+import ListDetails from '../ListDetails';
+
 let radio_props = [
     { label: 'With Counter', value: 0 },
     { label: 'Without Counter', value: 1 }
@@ -19,13 +22,52 @@ export default class List extends React.Component {
             modalVisible: false,
             listCategoryName: "",
             listTitle: "",
-            modalFlag: 0
+            modalFlag: 0,
         }
 
         BackHandler.addEventListener('hardwareBackPress', this.handleBackButton)
+
+        this.focusListener = null
+        this.focusListenerFlag = false
+    }
+
+    handleBackButton = () => {
+        if (this.props.navigation.isFocused()) {
+            Alert.alert("Hold on!", "Are you sure you want close the app?", [
+                {
+                    text: "Cancel",
+                    onPress: () => null,
+                    style: "cancel"
+                },
+                { text: "YES", onPress: () => BackHandler.exitApp() }
+            ]);
+            return true;
+        }
     }
 
     async componentDidMount() {
+        // await AsyncStorage.removeItem('notesArr')
+        // await AsyncStorage.removeItem('listsArr')
+        this.focusListener = this.props.navigation.addListener('focus', () => {
+            // do something
+            if (this.focusListenerFlag) {
+                this.loadListsData()
+                console.log('In Focus Inside')
+            }
+            this.focusListenerFlag = true
+            console.log('In Focus')
+        });
+
+        console.log(this.focusListener)
+
+        this.loadListsData()
+    }
+
+    // componentWillUnmount () {
+    //     this.focusListener.remove()
+    // }
+
+    async loadListsData() {
         let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
 
         this.setState({
@@ -35,11 +77,12 @@ export default class List extends React.Component {
 
     async addCategory() {
         let listsArr = await AsyncStorage.getItem('listsArr') == null ? [] : JSON.parse(await AsyncStorage.getItem('listsArr'))
-
+        console.log('listsArr.length' + listsArr.length)
         let categoryObj = {
             index: listsArr.length,
             listCategoryName: this.state.listCategoryName,
-            listTitle: this.state.listTitle
+            listTitle: this.state.listTitle,
+            notesArr: []
         }
 
         listsArr.push(categoryObj)
@@ -50,7 +93,8 @@ export default class List extends React.Component {
             listsArr,
             listTitle: "",
             modalVisible: false,
-            modalFlag: 0
+            modalFlag: 0,
+            listCategoryName: ""
         })
     }
 
@@ -115,7 +159,7 @@ export default class List extends React.Component {
                                         ))
                                     }
                                     <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 5 }}>
-                                        <TouchableOpacity onPress={() => { this.setState({ modalFlag: 1, listCategoryName: "" }) }} style={{ height: 25, paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000', borderRadius: 20, marginRight: 5 }}>
+                                        <TouchableOpacity onPress={() => { this.setState({ modalFlag: 1 }) }} style={{ height: 25, paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000', borderRadius: 20, marginRight: 5 }}>
                                             <Text style={{ fontSize: 14, color: '#ffffff' }}>Select</Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity onPress={() => { this.setState({ modalVisible: false, listCategoryName: "" }) }} style={{ height: 25, paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000', borderRadius: 20 }}>
@@ -129,7 +173,7 @@ export default class List extends React.Component {
                                         <TextInput style={{ fontSize: 17 }} placeholder="Enter Category Title" multiline={true} onChangeText={(listTitle) => { this.setState({ listTitle }) }} value={this.state.listTitle} />
                                     </View>
                                     <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-                                        <TouchableOpacity onPress={() => { this.setState({ modalVisible: false, listTitle: "" }) }} style={{ height: 25, paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000', borderRadius: 20, marginRight: 5 }}>
+                                        <TouchableOpacity onPress={() => { this.setState({ modalVisible: false, listTitle: "", listCategoryName: "" }) }} style={{ height: 25, paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000', borderRadius: 20, marginRight: 5 }}>
                                             <Text style={{ fontSize: 14, color: '#ffffff' }}>Cancel</Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity onPress={() => { this.addCategory() }} style={{ height: 25, paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000000', borderRadius: 20 }}>
@@ -161,21 +205,23 @@ export default class List extends React.Component {
                                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 20 }}>
                                     {
                                         this.state.listsArr.map((data, index) => (
-                                            <TouchableOpacity key={index} style={[{
-                                                flexWrap: 'wrap',
-                                                shadowColor: "#000",
-                                                shadowOffset: {
-                                                    width: 0,
-                                                    height: 2
-                                                },
-                                                shadowOpacity: 0.25,
-                                                shadowRadius: 3.84,
-                                                elevation: 5, width: '48%', height: 100, borderRadius: 10, marginTop: 10, marginBottom: 10
-                                            }, index % 2 == 0 ? { marginRight: '4%' } : null]}>
-                                                <View style={{ flex: 1, padding: 10, width: '100%' }}>
-                                                    <View style={{ borderBottomWidth: 1 }}>
-                                                        <Text style={{fontSize: 18, fontWeight: 'bold'}}>{data.listTitle}</Text>
-                                                    </View>
+                                            <TouchableOpacity key={index}
+                                                onPress={() => { console.log(data.index); this.props.navigation.navigate("ListDetails", { listIndex: data.index }) }}
+                                                style={[{
+                                                    shadowColor: "#000",
+                                                    shadowOffset: {
+                                                        width: 0,
+                                                        height: 2
+                                                    },
+                                                    shadowOpacity: 0.25,
+                                                    shadowRadius: 3.84,
+                                                    elevation: 5, width: '48%', height: 100, borderRadius: 10, marginTop: 10, marginBottom: 10, padding: 10
+                                                }, index % 2 == 0 ? { marginRight: '4%' } : null]}>
+                                                <View style={{ flexDirection: 'row', width: '100%' }}>
+                                                    <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>{data.listTitle}</Text>
+                                                    <TouchableOpacity style={{ justifyContent: 'center' }}>
+                                                        <Bin width={20} height={15} />
+                                                    </TouchableOpacity>
                                                 </View>
                                             </TouchableOpacity>
                                         ))

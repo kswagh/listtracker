@@ -34,30 +34,27 @@ export default class ListDetails extends React.Component {
       editNoteCounter: 0,
 
       isFilterModalVisible: false,
-      filterName: ""
+      filterName: "",
+
+      listTitle: "",
+      listCategoryName: "",
     }
-
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackButton)
-  }
-
-  componentDidMount() {
-    this.changeKeepAwake(true)
   }
 
   componentWillUnmount() {
     this.changeKeepAwake(false)
   }
 
-  handleBackButton() {
-    return true;
-  }
-
   async componentDidMount() {
     // await AsyncStorage.removeItem('notesArr')
-    let notesArr = await AsyncStorage.getItem('notesArr')
+    let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+
+    console.log(this.props.navigation)
 
     this.setState({
-      notesArr: notesArr == null ? [] : JSON.parse(notesArr)
+      notesArr: listsArr[this.props.route.params.listIndex].notesArr,
+      listCategoryName: listsArr[this.props.route.params.listIndex].listCategoryName,
+      listTitle: listsArr[this.props.route.params.listIndex].listTitle
     })
   }
 
@@ -71,28 +68,35 @@ export default class ListDetails extends React.Component {
 
   //function to add a note
   async addNote() {
+    try {
+      if (this.state.noteText == "") {
+        Toast.show('Note cannot be blank!', Toast.LONG);
+      } else {
+        let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
 
-    if (this.state.noteText == "") {
-      Toast.show('Note cannot be blank!', Toast.LONG);
-    } else {
-      let notesArr = JSON.parse(await AsyncStorage.getItem('notesArr')) == null ? [] : JSON.parse(await AsyncStorage.getItem('notesArr'))
-      
-      let notesArrObj = {
-        checkBoxChecked: false,
-        noteText: this.state.noteText,
-        counter: 0,
-        index: notesArr.length
+        let notesArr = listsArr[this.props.route.params.listIndex].notesArr
+
+        let notesArrObj = {
+          checkBoxChecked: false,
+          noteText: this.state.noteText,
+          counter: 0,
+          index: notesArr.length
+        }
+
+        notesArr.push(notesArrObj);
+
+        listsArr[this.props.route.params.listIndex].notesArr = notesArr
+
+        await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+
+        this.setState({
+          isAlertModalVisible: false
+        })
+
+        this.applyFilter()
       }
-
-      notesArr.push(notesArrObj);
-
-      await AsyncStorage.setItem('notesArr', JSON.stringify(notesArr))
-
-      this.setState({
-        isAlertModalVisible: false
-      })
-
-      this.applyFilter()
+    } catch (e) {
+      console.log(e)
     }
   }
 
@@ -113,7 +117,10 @@ export default class ListDetails extends React.Component {
     if (this.state.noteText == "") {
       Toast.show('Note cannot be blank!', Toast.LONG);
     } else {
-      let notesArr = JSON.parse(await AsyncStorage.getItem('notesArr'))
+      let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+
+      let notesArr = listsArr[this.props.route.params.listIndex].notesArr
+
       let notesArrObj = {
         checkBoxChecked: this.state.editNoteCheckBoxChecked,
         noteText: this.state.noteText,
@@ -123,7 +130,9 @@ export default class ListDetails extends React.Component {
 
       notesArr[this.state.editNoteIndex] = notesArrObj
 
-      await AsyncStorage.setItem('notesArr', JSON.stringify(notesArr))
+      listsArr[this.props.route.params.listIndex].notesArr = notesArr
+
+      await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
 
       this.setState({
         noteText: "",
@@ -136,8 +145,9 @@ export default class ListDetails extends React.Component {
 
   //Function to change checkbox checked flag
   async changeCheckBoxCheckedFlag(index, checkBoxChecked, counter, noteText) {
-    console.log(checkBoxChecked)
-    let notesArr = JSON.parse(await AsyncStorage.getItem('notesArr'))
+    let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+
+    let notesArr = listsArr[this.props.route.params.listIndex].notesArr
 
     let notesArrObj = {
       checkBoxChecked: checkBoxChecked ? false : true,
@@ -148,7 +158,9 @@ export default class ListDetails extends React.Component {
 
     notesArr[index] = notesArrObj
 
-    await AsyncStorage.setItem('notesArr', JSON.stringify(notesArr))
+    listsArr[this.props.route.params.listIndex].notesArr = notesArr
+
+    await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
 
     this.applyFilter()
 
@@ -167,7 +179,8 @@ export default class ListDetails extends React.Component {
         },
         {
           text: "OK", onPress: async () => {
-            let notesArr = JSON.parse(await AsyncStorage.getItem('notesArr'))
+            let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+            let notesArr = listsArr[this.props.route.params.listIndex].notesArr
             let notesArrNew = []
 
             notesArr.splice(index, 1)
@@ -182,7 +195,9 @@ export default class ListDetails extends React.Component {
               notesArrNew[index] = obj
             })
 
-            await AsyncStorage.setItem('notesArr', JSON.stringify(notesArrNew))
+            listsArr[this.props.route.params.listIndex].notesArr = notesArrNew
+
+            await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
 
             this.applyFilter()
 
@@ -195,7 +210,9 @@ export default class ListDetails extends React.Component {
 
   //Function to decrease the note counter
   async decreaseCounter(index, checkBoxChecked, counter, noteText) {
-    let notesArr = JSON.parse(await AsyncStorage.getItem('notesArr'))
+    let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+    let notesArr = listsArr[this.props.route.params.listIndex].notesArr
+
     let notesArrObj = {
       checkBoxChecked,
       noteText: noteText,
@@ -205,14 +222,18 @@ export default class ListDetails extends React.Component {
 
     notesArr[index] = notesArrObj
 
-    await AsyncStorage.setItem('notesArr', JSON.stringify(notesArr))
+    listsArr[this.props.route.params.listIndex].notesArr = notesArr
+
+    await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
 
     this.applyFilter()
   }
 
   //Function to increase the note counter
   async increaseCounter(index, checkBoxChecked, counter, noteText) {
-    let notesArr = JSON.parse(await AsyncStorage.getItem('notesArr'))
+    let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+    let notesArr = listsArr[this.props.route.params.listIndex].notesArr
+
     let notesArrObj = {
       checkBoxChecked,
       noteText: noteText,
@@ -222,7 +243,10 @@ export default class ListDetails extends React.Component {
 
     notesArr[index] = notesArrObj
 
-    await AsyncStorage.setItem('notesArr', JSON.stringify(notesArr))
+    listsArr[this.props.route.params.listIndex].notesArr = notesArr
+
+    await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+
 
     this.applyFilter()
   }
@@ -240,7 +264,8 @@ export default class ListDetails extends React.Component {
         {
           text: "OK", onPress: async () => {
             try {
-              let notesArrOld = JSON.parse(await AsyncStorage.getItem('notesArr'))
+              let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+              let notesArrOld = listsArr[this.props.route.params.listIndex].notesArr
               let notesArrNew = []
               let newNotesArrObj = Object
 
@@ -254,7 +279,9 @@ export default class ListDetails extends React.Component {
                 notesArrNew.push(newNotesArrObj)
               })
 
-              await AsyncStorage.setItem('notesArr', JSON.stringify(notesArrNew))
+              listsArr[this.props.route.params.listIndex].notesArr = notesArrNew
+
+              await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
 
               this.setState({
                 notesArr: notesArrNew,
@@ -271,25 +298,30 @@ export default class ListDetails extends React.Component {
   }
 
   async applyFilter() {
-    // let notesArrTemp = await AsyncStorage.getItem('notesArr')
-    let notesArr = JSON.parse(await AsyncStorage.getItem('notesArr'))
-    let notesArrNew = []
+    try {
+      // let notesArrTemp = await AsyncStorage.getItem('notesArr')
+      let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+      let notesArr = listsArr[this.props.route.params.listIndex].notesArr
+      let notesArrNew = []
 
-    notesArr.forEach(element => {
-      if (this.state.filterName == "Checked") {
-        if (element.checkBoxChecked) {
+      notesArr.forEach(element => {
+        if (this.state.filterName == "Checked") {
+          if (element.checkBoxChecked) {
+            notesArrNew.push(element)
+          }
+        } else if (this.state.filterName == "Unchecked") {
+          if (!element.checkBoxChecked) {
+            notesArrNew.push(element)
+          }
+        } else {
           notesArrNew.push(element)
         }
-      } else if (this.state.filterName == "Unchecked") {
-        if (!element.checkBoxChecked) {
-          notesArrNew.push(element)
-        }
-      } else {
-        notesArrNew.push(element)
-      }
-    });
+      });
 
-    this.setState({ notesArr: notesArrNew, isFilterModalVisible: false })
+      this.setState({ notesArr: notesArrNew, isFilterModalVisible: false })
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   async verifyFilterApplyData() {
@@ -309,7 +341,8 @@ export default class ListDetails extends React.Component {
   }
 
   async removeFilter() {
-    let notesArr = JSON.parse(await AsyncStorage.getItem('notesArr'))
+    let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+    let notesArr = listsArr[this.props.route.params.listIndex].notesArr
 
     this.setState({
       notesArr,
@@ -317,6 +350,13 @@ export default class ListDetails extends React.Component {
       filterName: ""
     })
 
+  }
+
+  async changeListTitle() {
+    let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+    listsArr[this.props.route.params.listIndex].listTitle = this.state.listTitle
+
+    await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
   }
 
   render() {
@@ -449,6 +489,7 @@ export default class ListDetails extends React.Component {
         {/* Header End */}
 
         <View style={{ flex: 1, padding: 20 }}>
+          <TextInput style={{ fontSize: 17 }} placeholder="Title" multiline={true} onBlur={() => { this.changeListTitle() }} onChangeText={(listTitle) => { this.setState({ listTitle }) }} value={this.state.listTitle} />
           <TouchableOpacity onPress={() => { this.verifyFilterApplyData() }}
             style={{ alignItems: 'flex-end' }}>
             <Filter width="20" height="20" />
@@ -484,15 +525,20 @@ export default class ListDetails extends React.Component {
                         <TouchableOpacity style={{ justifyContent: 'center', marginRight: 10 }} onPress={() => { this.setEditNoteParams(data.index, data.checkBoxChecked, data.noteText, data.counter) }}>
                           <Edit color={'#000000'} width="20" height="20" />
                         </TouchableOpacity>
-                        <View style={{ flexDirection: 'row', marginRight: 15, alignItems: 'center' }}>
-                          <TouchableOpacity style={{ width: 25, height: 25, padding: 5, backgroundColor: '#000000', borderRadius: 15, justifyContent: 'center', alignItems: 'center', marginRight: 5 }} onPress={() => { this.decreaseCounter(data.index, data.checkBoxChecked, data.counter, data.noteText) }}>
-                            <Minus width="10" height="10" />
-                          </TouchableOpacity>
-                          <Text style={[{ fontSize: 17 }, data.counter > 0 ? { color: '#33a249' } : { color: '#000000' }]}>{data.counter}</Text>
-                          <TouchableOpacity style={{ width: 25, height: 25, padding: 5, backgroundColor: '#000000', borderRadius: 15, justifyContent: 'center', alignItems: 'center', marginLeft: 5 }} onPress={() => { this.increaseCounter(data.index, data.checkBoxChecked, data.counter, data.noteText) }}>
-                            <Add width="10" height="10" />
-                          </TouchableOpacity>
-                        </View>
+                        {
+                          this.state.listCategoryName == "With Counter" ?
+                            <View style={{ flexDirection: 'row', marginRight: 15, alignItems: 'center' }}>
+                              <TouchableOpacity style={{ width: 25, height: 25, padding: 5, backgroundColor: '#000000', borderRadius: 15, justifyContent: 'center', alignItems: 'center', marginRight: 5 }} onPress={() => { this.decreaseCounter(data.index, data.checkBoxChecked, data.counter, data.noteText) }}>
+                                <Minus width="10" height="10" />
+                              </TouchableOpacity>
+                              <Text style={[{ fontSize: 17 }, data.counter > 0 ? { color: '#33a249' } : { color: '#000000' }]}>{data.counter}</Text>
+                              <TouchableOpacity style={{ width: 25, height: 25, padding: 5, backgroundColor: '#000000', borderRadius: 15, justifyContent: 'center', alignItems: 'center', marginLeft: 5 }} onPress={() => { this.increaseCounter(data.index, data.checkBoxChecked, data.counter, data.noteText) }}>
+                                <Add width="10" height="10" />
+                              </TouchableOpacity>
+                            </View>
+                            :
+                            null
+                        }
                         <TouchableOpacity style={{ justifyContent: 'center' }} onPress={() => { this.deleteNote(data.index) }}>
                           <Bin color={'#000000'} width="20" height="20" />
                         </TouchableOpacity>
