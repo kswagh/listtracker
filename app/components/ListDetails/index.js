@@ -488,12 +488,14 @@ export default class ListDetails extends React.Component {
         </View>
         {/* Header End */}
 
-        <View style={{ flex: 1, padding: 20 }}>
-          <TextInput style={{ fontSize: 17 }} placeholder="Title" multiline={true} onBlur={() => { this.changeListTitle() }} onChangeText={(listTitle) => { this.setState({ listTitle }) }} value={this.state.listTitle} />
-          <TouchableOpacity onPress={() => { this.verifyFilterApplyData() }}
-            style={{ alignItems: 'flex-end' }}>
-            <Filter width="20" height="20" />
-          </TouchableOpacity>
+        <View style={{ flex: 1, paddingVertical: 20 }}>
+          <View style={{flexDirection: 'row', paddingBottom: 10, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: '#EBEBEB', marginBottom: 20}}>
+            <TextInput style={{ flex: 1, fontSize: 20, fontWeight: 'bold', marginRight: 10 }} placeholder="Title" multiline={true} onBlur={() => { this.changeListTitle() }} onChangeText={(listTitle) => { this.setState({ listTitle }) }} value={this.state.listTitle} />
+            <TouchableOpacity onPress={() => { this.verifyFilterApplyData() }}
+              style={{ justifyContent: 'center' }}>
+              <Filter width="20" height="20" />
+            </TouchableOpacity>
+          </View>
           {/* Display Notes View Start */}
           {
             this.state.notesArr == "" ?
@@ -502,7 +504,7 @@ export default class ListDetails extends React.Component {
               <ScrollView>
                 {
                   this.state.notesArr.map((data, index) => (
-                    <View key={index} style={[{ borderBottomWidth: 1, borderBottomColor: '#EBEBEB', paddingBottom: 10 }, index == this.state.notesArr.length - 1 ? { marginBottom: 45 } : { marginBottom: 10 }]}>
+                    <View key={index} style={[{ borderBottomWidth: 1, borderBottomColor: '#EBEBEB', paddingBottom: 10, paddingHorizontal: 20 }, index == this.state.notesArr.length - 1 ? { marginBottom: 45 } : { marginBottom: 10 }]}>
                       <TouchableOpacity onPress={() => { this.changeCheckBoxCheckedFlag(data.index, data.checkBoxChecked, data.counter, data.noteText) }} style={{ flexDirection: 'row', marginBottom: 10 }}>
                         <CheckBox
                           onClick={() => {

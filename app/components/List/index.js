@@ -6,7 +6,6 @@ import { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-si
 import AsyncStorage from '@react-native-community/async-storage';
 import Add from '../../assets/Images/add.svg'
 import Bin from '../../assets/Images/bin.svg'
-import ListDetails from '../ListDetails';
 
 let radio_props = [
     { label: 'With Counter', value: 0 },
@@ -63,9 +62,9 @@ export default class List extends React.Component {
         this.loadListsData()
     }
 
-    // componentWillUnmount () {
-    //     this.focusListener.remove()
-    // }
+    componentWillUnmount () {
+        this.focusListener.remove()
+    }
 
     async loadListsData() {
         let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
@@ -77,7 +76,7 @@ export default class List extends React.Component {
 
     async addCategory() {
         let listsArr = await AsyncStorage.getItem('listsArr') == null ? [] : JSON.parse(await AsyncStorage.getItem('listsArr'))
-        console.log('listsArr.length' + listsArr.length)
+
         let categoryObj = {
             index: listsArr.length,
             listCategoryName: this.state.listCategoryName,
@@ -96,6 +95,50 @@ export default class List extends React.Component {
             modalFlag: 0,
             listCategoryName: ""
         })
+    }
+
+    async deleteList(index) {
+        Alert.alert(
+            "Alert",
+            "Are you sure you want to delete the list?",
+            [
+                {
+                    text: "Cancel",
+                    onPress: () => console.log("Cancel Pressed"),
+                    style: "cancel"
+                },
+                {
+                    text: "OK", onPress: async () => {
+                        try {
+                            let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+                            let listsArrNew = []
+    
+                            listsArr.splice(index, 1)
+    
+                            listsArr.map((data, index) => {
+                                let obj = {
+                                    index: index,
+                                    listCategoryName: data.listCategoryName,
+                                    listTitle: data.listTitle,
+                                    notesArr: data.notesArr
+                                }
+    
+                                listsArrNew[index] = obj
+                            })
+    
+                            await AsyncStorage.setItem('listsArr', JSON.stringify(listsArrNew))
+    
+                            this.setState({
+                                listsArr: listsArrNew
+                            })
+                        } catch(e) {
+                            console.log(e)
+                        }
+                    }
+                }
+            ],
+            { cancelable: false }
+        );
     }
 
     render() {
@@ -169,7 +212,7 @@ export default class List extends React.Component {
                                 </View>
                                 :
                                 <View>
-                                    <View style={{ height: 100 }}>
+                                    <View style={{ minHeight: 100 }}>
                                         <TextInput style={{ fontSize: 17 }} placeholder="Enter Category Title" multiline={true} onChangeText={(listTitle) => { this.setState({ listTitle }) }} value={this.state.listTitle} />
                                     </View>
                                     <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
@@ -206,7 +249,7 @@ export default class List extends React.Component {
                                     {
                                         this.state.listsArr.map((data, index) => (
                                             <TouchableOpacity key={index}
-                                                onPress={() => { console.log(data.index); this.props.navigation.navigate("ListDetails", { listIndex: data.index }) }}
+                                                onPress={() => { this.props.navigation.navigate("ListDetails", { listIndex: data.index }) }}
                                                 style={[{
                                                     shadowColor: "#000",
                                                     shadowOffset: {
@@ -215,14 +258,28 @@ export default class List extends React.Component {
                                                     },
                                                     shadowOpacity: 0.25,
                                                     shadowRadius: 3.84,
-                                                    elevation: 5, width: '48%', height: 100, borderRadius: 10, marginTop: 10, marginBottom: 10, padding: 10
-                                                }, index % 2 == 0 ? { marginRight: '4%' } : null]}>
+                                                    elevation: 2, width: '48%', height: 100, borderRadius: 10, marginTop: 10, padding: 10,
+                                                }, index % 2 == 0 ? { marginRight: '4%' } : null, index == this.state.listsArr.length - 1 ? { marginBottom: 65 } : { marginBottom: 10 }]}>
                                                 <View style={{ flexDirection: 'row', width: '100%' }}>
                                                     <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>{data.listTitle}</Text>
-                                                    <TouchableOpacity style={{ justifyContent: 'center' }}>
+                                                    <TouchableOpacity onPress={() => { this.deleteList(data.index) }} style={{ justifyContent: 'center' }}>
                                                         <Bin width={20} height={15} />
                                                     </TouchableOpacity>
                                                 </View>
+                                                {
+                                                    data.notesArr != "" ?
+                                                        <View style={{ marginTop: 10 }}>
+                                                            <Text>1. {data.notesArr[0].noteText.length > 11 ? data.notesArr[0].noteText.substring(0, 11) + '...' : data.notesArr[0].noteText}</Text>
+                                                            {
+                                                                typeof data.notesArr[1] !== 'undefined' ?
+                                                                    <Text>2. {data.notesArr[1].noteText.length > 11 ? data.notesArr[1].noteText.substring(0, 11) + '...' : data.notesArr[1].noteText}</Text>
+                                                                    :
+                                                                    null
+                                                            }
+                                                        </View>
+                                                        :
+                                                        null
+                                                }
                                             </TouchableOpacity>
                                         ))
                                     }
