@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, BackHandler, TouchableOpacity, TextInput, ScrollView, Alert, StatusBar } from 'react-native';
+import { View, Text, BackHandler, TouchableOpacity, TextInput, ScrollView, Alert, StatusBar, Dimensions } from 'react-native';
 import CheckBox from 'react-native-check-box'
 import Modal from 'react-native-modal';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -11,7 +11,14 @@ import Minus from '../../assets/Images/minus.svg'
 import Edit from '../../assets/Images/edit.svg'
 import Refresh from '../../assets/Images/refresh.svg'
 import Filter from '../../assets/Images/filter.svg'
+import UpArrow from '../../assets/Images/up_arrow.svg'
+import DownArrow from '../../assets/Images/down_arrow.svg'
+import Checked from '../../assets/Images/checked.svg'
 import { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-simple-radio-button';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 let radio_props = [
   { label: 'Checked', value: 0 },
@@ -38,6 +45,9 @@ export default class ListDetails extends React.Component {
 
       listTitle: "",
       listCategoryName: "",
+
+      changeListPositionViewVisible: false,
+      currentIndex: 0
     }
   }
 
@@ -359,9 +369,89 @@ export default class ListDetails extends React.Component {
     await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
   }
 
+  async changeListPosition(currentIndex) {
+    this.setState({ changeListPositionViewVisible: true, currentIndex })
+  }
+
+  async changeListPositionDownwrds() {
+    let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+    let newNotesArr = []
+    let flag = 0
+    let noteObj = Object
+
+    // console.log(listsArr[this.props.route.params.listIndex].notesArr)
+    if (this.state.currentIndex < (listsArr[this.props.route.params.listIndex].notesArr.length - 1)) {
+      listsArr[this.props.route.params.listIndex].notesArr.map((data, indexMain) => {
+        if (data.index == this.state.currentIndex) {
+          let tempObjOne = {
+            checkBoxChecked: data.checkBoxChecked,
+            counter: data.counter,
+            index: this.state.currentIndex + 1,
+            noteText: data.noteText
+          }
+          noteObj = tempObjOne
+          flag = 1
+          // console.log(noteObj)
+        }
+
+        if (flag == 1) {
+          if ((this.state.currentIndex + 1) == data.index) {
+            let tempObjTwo = {
+              checkBoxChecked: data.checkBoxChecked,
+              counter: data.counter,
+              index: this.state.currentIndex,
+              noteText: data.noteText
+            }
+            // console.log(noteObj)
+            // console.log(tempObjTwo)
+
+            newNotesArr.push(tempObjTwo)
+            newNotesArr.push(noteObj)
+            this.setState({ currentIndex: data.index })
+            flag = 0
+          }
+        } else {
+          newNotesArr.push(data)
+        }
+      });
+      // console.log(newNotesArr)
+      listsArr[this.props.route.params.listIndex].notesArr = newNotesArr
+      console.log(listsArr[this.props.route.params.listIndex].notesArr)
+      console.log(newNotesArr) 
+
+      this.setState({ notesArr: newNotesArr })
+
+      await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+
+    }
+  }
+
   render() {
     return (
       <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+        {/* Up and Down arrow start */}
+        {
+          this.state.changeListPositionViewVisible ?
+            <View style={{ position: 'absolute', zIndex: 20, width: windowWidth, height: windowHeight }}>
+              <View style={{ position: 'absolute', zIndex: 30, width: windowWidth, height: windowHeight, backgroundColor: '#ffffff', opacity: 0.5 }} />
+              <View style={{ position: 'absolute', zIndex: 40, top: 200, right: 20, backgroundColor: '#000000', borderRadius: 10, padding: 10 }}>
+                <TouchableOpacity onPress={() => { this.changeListPositionUpwards() }}>
+                  <UpArrow width="20" height="20" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => { this.changeListPositionDownwrds() }} style={{ marginTop: 10 }}>
+                  <DownArrow width="20" height="20" />
+                </TouchableOpacity>
+              </View>
+              <View style={{ position: 'absolute', zIndex: 40, top: 280, right: 20, backgroundColor: '#000000', borderRadius: 10, padding: 10 }}>
+                <TouchableOpacity onPress={() => { this.setState({ changeListPositionViewVisible: false }) }}>
+                  <Checked width="20" height="20" />
+                </TouchableOpacity>
+              </View>
+            </View>
+            :
+            null
+        }
+        {/* Up and Down arrow end */}
         {/* Filter Modal Start */}
         <Modal
           animationIn="slideInUp"
@@ -489,7 +579,7 @@ export default class ListDetails extends React.Component {
         {/* Header End */}
 
         <View style={{ flex: 1, paddingVertical: 20 }}>
-          <View style={{flexDirection: 'row', paddingBottom: 10, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: '#EBEBEB', marginBottom: 20}}>
+          <View style={{ flexDirection: 'row', paddingBottom: 10, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: '#EBEBEB', marginBottom: 20 }}>
             <TextInput style={{ flex: 1, fontSize: 20, fontWeight: 'bold', marginRight: 10 }} placeholder="Title" multiline={true} onBlur={() => { this.changeListTitle() }} onChangeText={(listTitle) => { this.setState({ listTitle }) }} value={this.state.listTitle} />
             <TouchableOpacity onPress={() => { this.verifyFilterApplyData() }}
               style={{ justifyContent: 'center' }}>
@@ -505,7 +595,7 @@ export default class ListDetails extends React.Component {
                 {
                   this.state.notesArr.map((data, index) => (
                     <View key={index} style={[{ borderBottomWidth: 1, borderBottomColor: '#EBEBEB', paddingBottom: 10, paddingHorizontal: 20 }, index == this.state.notesArr.length - 1 ? { marginBottom: 45 } : { marginBottom: 10 }]}>
-                      <TouchableOpacity onPress={() => { this.changeCheckBoxCheckedFlag(data.index, data.checkBoxChecked, data.counter, data.noteText) }} style={{ flexDirection: 'row', marginBottom: 10 }}>
+                      <TouchableWithoutFeedback onLongPress={() => { this.state.filterName == "" && this.changeListPosition(data.index) }} onPress={() => { this.changeCheckBoxCheckedFlag(data.index, data.checkBoxChecked, data.counter, data.noteText) }} style={{ flexDirection: 'row', marginBottom: 10 }}>
                         <CheckBox
                           onClick={() => {
                             this.changeCheckBoxCheckedFlag(data.index, data.checkBoxChecked, data.counter, data.noteText)
@@ -522,7 +612,7 @@ export default class ListDetails extends React.Component {
                         <View style={{ flex: 1, justifyContent: 'center', marginRight: 5 }}>
                           <Text style={{ fontSize: 17 }}>{data.noteText}</Text>
                         </View>
-                      </TouchableOpacity>
+                      </TouchableWithoutFeedback>
                       <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
                         <TouchableOpacity style={{ justifyContent: 'center', marginRight: 10 }} onPress={() => { this.setEditNoteParams(data.index, data.checkBoxChecked, data.noteText, data.counter) }}>
                           <Edit color={'#000000'} width="20" height="20" />
