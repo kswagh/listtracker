@@ -15,7 +15,6 @@ import UpArrow from '../../assets/Images/up_arrow.svg'
 import DownArrow from '../../assets/Images/down_arrow.svg'
 import Checked from '../../assets/Images/checked.svg'
 import { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-simple-radio-button';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -373,55 +372,112 @@ export default class ListDetails extends React.Component {
     this.setState({ changeListPositionViewVisible: true, currentIndex })
   }
 
+  async changeListPositionUpwards() {
+    let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+
+    if (this.state.currentIndex > 0) {
+      let objOne = listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex]
+      let objTwo = listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex - 1]
+
+      let tempObjOne = {
+        checkBoxChecked: objOne.checkBoxChecked,
+        counter: objOne.counter,
+        index: this.state.currentIndex - 1,
+        noteText: objOne.noteText
+      }
+      
+      let tempObjTwo = {
+        checkBoxChecked: objTwo.checkBoxChecked,
+        counter: objTwo.counter,
+        index: this.state.currentIndex,
+        noteText: objTwo.noteText
+      }
+
+      listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex] = tempObjTwo
+
+      listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex - 1] = tempObjOne
+
+      this.setState({notesArr: listsArr[this.props.route.params.listIndex].notesArr, currentIndex: this.state.currentIndex - 1})
+
+      await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+    }
+  }
+
   async changeListPositionDownwrds() {
     let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
-    let newNotesArr = []
-    let flag = 0
-    let noteObj = Object
+    // let newNotesArr = []
+    // let flag = 0
+    // let noteObj = Object
 
     // console.log(listsArr[this.props.route.params.listIndex].notesArr)
     if (this.state.currentIndex < (listsArr[this.props.route.params.listIndex].notesArr.length - 1)) {
-      listsArr[this.props.route.params.listIndex].notesArr.map((data, indexMain) => {
-        if (data.index == this.state.currentIndex) {
-          let tempObjOne = {
-            checkBoxChecked: data.checkBoxChecked,
-            counter: data.counter,
-            index: this.state.currentIndex + 1,
-            noteText: data.noteText
-          }
-          noteObj = tempObjOne
-          flag = 1
-          // console.log(noteObj)
-        }
+      
+      let objOne = listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex]
+      let objTwo = listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex + 1]
 
-        if (flag == 1) {
-          if ((this.state.currentIndex + 1) == data.index) {
-            let tempObjTwo = {
-              checkBoxChecked: data.checkBoxChecked,
-              counter: data.counter,
-              index: this.state.currentIndex,
-              noteText: data.noteText
-            }
-            // console.log(noteObj)
-            // console.log(tempObjTwo)
+      let tempObjOne = {
+        checkBoxChecked: objOne.checkBoxChecked,
+        counter: objOne.counter,
+        index: this.state.currentIndex + 1,
+        noteText: objOne.noteText
+      }
+      
+      let tempObjTwo = {
+        checkBoxChecked: objTwo.checkBoxChecked,
+        counter: objTwo.counter,
+        index: this.state.currentIndex,
+        noteText: objTwo.noteText
+      }
 
-            newNotesArr.push(tempObjTwo)
-            newNotesArr.push(noteObj)
-            this.setState({ currentIndex: data.index })
-            flag = 0
-          }
-        } else {
-          newNotesArr.push(data)
-        }
-      });
-      // console.log(newNotesArr)
-      listsArr[this.props.route.params.listIndex].notesArr = newNotesArr
-      console.log(listsArr[this.props.route.params.listIndex].notesArr)
-      console.log(newNotesArr) 
+      listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex] = tempObjTwo
 
-      this.setState({ notesArr: newNotesArr })
+      listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex + 1] = tempObjOne
+
+      this.setState({notesArr: listsArr[this.props.route.params.listIndex].notesArr, currentIndex: this.state.currentIndex + 1})
 
       await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+
+      // listsArr[this.props.route.params.listIndex].notesArr.map((data, indexMain) => {
+      //   if (data.index == this.state.currentIndex) {
+      //     let tempObjOne = {
+      //       checkBoxChecked: data.checkBoxChecked,
+      //       counter: data.counter,
+      //       index: this.state.currentIndex + 1,
+      //       noteText: data.noteText
+      //     }
+      //     noteObj = tempObjOne
+      //     flag = 1
+      //     // console.log(noteObj)
+      //   }
+
+      //   if (flag == 1) {
+      //     if ((this.state.currentIndex + 1) == data.index) {
+      //       let tempObjTwo = {
+      //         checkBoxChecked: data.checkBoxChecked,
+      //         counter: data.counter,
+      //         index: this.state.currentIndex,
+      //         noteText: data.noteText
+      //       }
+      //       // console.log(noteObj)
+      //       // console.log(tempObjTwo)
+
+      //       newNotesArr.push(tempObjTwo)
+      //       newNotesArr.push(noteObj)
+      //       this.setState({ currentIndex: data.index })
+      //       flag = 0
+      //     }
+      //   } else {
+      //     newNotesArr.push(data)
+      //   }
+      // });
+      // // console.log(newNotesArr)
+      // listsArr[this.props.route.params.listIndex].notesArr = newNotesArr
+      // console.log(listsArr[this.props.route.params.listIndex].notesArr)
+      // console.log(newNotesArr)
+
+      // this.setState({ notesArr: newNotesArr })
+
+      // await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
 
     }
   }
@@ -595,7 +651,7 @@ export default class ListDetails extends React.Component {
                 {
                   this.state.notesArr.map((data, index) => (
                     <View key={index} style={[{ borderBottomWidth: 1, borderBottomColor: '#EBEBEB', paddingBottom: 10, paddingHorizontal: 20 }, index == this.state.notesArr.length - 1 ? { marginBottom: 45 } : { marginBottom: 10 }]}>
-                      <TouchableWithoutFeedback onLongPress={() => { this.state.filterName == "" && this.changeListPosition(data.index) }} onPress={() => { this.changeCheckBoxCheckedFlag(data.index, data.checkBoxChecked, data.counter, data.noteText) }} style={{ flexDirection: 'row', marginBottom: 10 }}>
+                      <TouchableOpacity onLongPress={() => { this.state.filterName == "" && this.changeListPosition(data.index) }} onPress={() => { this.changeCheckBoxCheckedFlag(data.index, data.checkBoxChecked, data.counter, data.noteText) }} style={{ flexDirection: 'row', marginBottom: 10 }}>
                         <CheckBox
                           onClick={() => {
                             this.changeCheckBoxCheckedFlag(data.index, data.checkBoxChecked, data.counter, data.noteText)
@@ -612,7 +668,7 @@ export default class ListDetails extends React.Component {
                         <View style={{ flex: 1, justifyContent: 'center', marginRight: 5 }}>
                           <Text style={{ fontSize: 17 }}>{data.noteText}</Text>
                         </View>
-                      </TouchableWithoutFeedback>
+                      </TouchableOpacity>
                       <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
                         <TouchableOpacity style={{ justifyContent: 'center', marginRight: 10 }} onPress={() => { this.setEditNoteParams(data.index, data.checkBoxChecked, data.noteText, data.counter) }}>
                           <Edit color={'#000000'} width="20" height="20" />

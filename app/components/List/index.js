@@ -1,11 +1,21 @@
 import React from 'react';
-import { View, Text, BackHandler, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, BackHandler, TouchableOpacity, TextInput, Alert, Dimensions } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Modal from 'react-native-modal';
 import { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-simple-radio-button';
 import AsyncStorage from '@react-native-community/async-storage';
 import Add from '../../assets/Images/add.svg'
 import Bin from '../../assets/Images/bin.svg'
+import UpArrow from '../../assets/Images/up_arrow.svg'
+import DownArrow from '../../assets/Images/down_arrow.svg'
+import LeftArrow from '../../assets/Images/left_arrow.svg'
+import RightArrow from '../../assets/Images/right_arrow.svg'
+import Checked from '../../assets/Images/checked.svg'
+
+// import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 let radio_props = [
     { label: 'With Counter', value: 0 },
@@ -22,6 +32,9 @@ export default class List extends React.Component {
             listCategoryName: "",
             listTitle: "",
             modalFlag: 0,
+
+            changeListPositionViewVisible: false,
+            currentIndex: 0
         }
 
         BackHandler.addEventListener('hardwareBackPress', this.handleBackButton)
@@ -62,9 +75,9 @@ export default class List extends React.Component {
         this.loadListsData()
     }
 
-    componentWillUnmount () {
-        this.focusListener.remove()
-    }
+    // componentWillUnmount() {
+    //     this.focusListener.remove()
+    // }
 
     async loadListsData() {
         let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
@@ -112,9 +125,9 @@ export default class List extends React.Component {
                         try {
                             let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
                             let listsArrNew = []
-    
+
                             listsArr.splice(index, 1)
-    
+
                             listsArr.map((data, index) => {
                                 let obj = {
                                     index: index,
@@ -122,16 +135,16 @@ export default class List extends React.Component {
                                     listTitle: data.listTitle,
                                     notesArr: data.notesArr
                                 }
-    
+
                                 listsArrNew[index] = obj
                             })
-    
+
                             await AsyncStorage.setItem('listsArr', JSON.stringify(listsArrNew))
-    
+
                             this.setState({
                                 listsArr: listsArrNew
                             })
-                        } catch(e) {
+                        } catch (e) {
                             console.log(e)
                         }
                     }
@@ -141,9 +154,120 @@ export default class List extends React.Component {
         );
     }
 
+    async changeListPosition(currentIndex) {
+        this.setState({ changeListPositionViewVisible: true, currentIndex })
+    }
+
+    async changeListPositionLeft() {
+        let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+    
+        if (this.state.currentIndex > 0) {
+          let objOne = listsArr[this.state.currentIndex]
+          let objTwo = listsArr[this.state.currentIndex - 1]
+
+          let tempObjOne = {
+            index: this.state.currentIndex - 1,
+            listCategoryName: objOne.listCategoryName,
+            listTitle: objOne.listTitle,
+            notesArr: objOne.notesArr
+          }
+          
+          let tempObjTwo = {
+            index: this.state.currentIndex,
+            listCategoryName: objTwo.listCategoryName,
+            listTitle: objTwo.listTitle,
+            notesArr: objTwo.notesArr
+          }
+    
+          listsArr[this.state.currentIndex] = tempObjTwo
+    
+          listsArr[this.state.currentIndex - 1] = tempObjOne
+          
+          console.log(listsArr)
+
+          this.setState({listsArr, currentIndex: this.state.currentIndex - 1})
+    
+          await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+        }
+    }
+
+    async changeListPositionRight() {
+        let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+
+        console.log(listsArr)
+    
+        if (this.state.currentIndex < (listsArr.length - 1)) {
+          let objOne = listsArr[this.state.currentIndex]
+          let objTwo = listsArr[this.state.currentIndex + 1]
+          
+          let tempObjOne = {
+            index: this.state.currentIndex + 1,
+            listCategoryName: objOne.listCategoryName,
+            listTitle: objOne.listTitle,
+            notesArr: objOne.notesArr
+          }
+          
+          let tempObjTwo = {
+            index: this.state.currentIndex,
+            listCategoryName: objTwo.listCategoryName,
+            listTitle: objTwo.listTitle,
+            notesArr: objTwo.notesArr
+          }
+    
+          listsArr[this.state.currentIndex] = tempObjTwo
+    
+          listsArr[this.state.currentIndex + 1] = tempObjOne
+          
+          console.log(listsArr)
+
+          this.setState({listsArr, currentIndex: this.state.currentIndex + 1})
+    
+          await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+        }
+    }
+    
     render() {
         return (
             <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+                {
+                    this.state.changeListPositionViewVisible ?
+                        <View style={{ position: 'absolute', zIndex: 20, width: windowWidth, height: windowHeight }}>
+                            <View style={{ position: 'absolute', zIndex: 30, width: windowWidth, height: windowHeight, backgroundColor: '#ffffff', opacity: 0.5 }} />
+                            <View style={{ position: 'absolute', zIndex: 40, top: 200, right: 20 }}>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <View style={{ justifyContent: 'center', marginRight: 5 }}>
+                                        <TouchableOpacity style={{ backgroundColor: '#000000', borderRadius: 10, padding: 10 }} onPress={() => {this.changeListPositionLeft()}}>
+                                            {/* onPress={() => { this.changeListPositionUpwards() }} */}
+                                            <LeftArrow width="10" height="10" />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={{ backgroundColor: '#000000', borderRadius: 10, padding: 10 }}>
+                                        <TouchableOpacity >
+                                            {/* onPress={() => { this.changeListPositionUpwards() }} */}
+                                            <UpArrow width="10" height="10" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={{ marginTop: 10 }}>
+                                            {/* onPress={() => { this.changeListPositionDownwrds() }} */}
+                                            <DownArrow width="10" height="10" />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={{ justifyContent: 'center', marginLeft: 5 }}>
+                                        <TouchableOpacity style={{ backgroundColor: '#000000', borderRadius: 10, padding: 10 }} onPress={() => {this.changeListPositionRight()}}>
+                                            {/* onPress={() => { this.changeListPositionUpwards() }} */}
+                                            <RightArrow width="10" height="10" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                                <View style={{ alignItems: 'center', marginTop: 10 }}>
+                                    <TouchableOpacity style={{ backgroundColor: '#000000', borderRadius: 10, padding: 10 }} onPress={() => { this.setState({ changeListPositionViewVisible: false }) }}>
+                                        <Checked width="10" height="10" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </View>
+                        :
+                        null
+                }
                 {/* Modal for if counter list or normal list and Note title start */}
                 <Modal
                     animationIn="slideInUp"
@@ -249,6 +373,7 @@ export default class List extends React.Component {
                                     {
                                         this.state.listsArr.map((data, index) => (
                                             <TouchableOpacity key={index}
+                                                onLongPress={() => { this.changeListPosition(data.index) }}
                                                 onPress={() => { this.props.navigation.navigate("ListDetails", { listIndex: data.index }) }}
                                                 style={[{
                                                     shadowColor: "#000",
