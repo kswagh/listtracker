@@ -160,34 +160,34 @@ export default class List extends React.Component {
 
     async changeListPositionLeft() {
         let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
-    
+
         if (this.state.currentIndex > 0) {
-          let objOne = listsArr[this.state.currentIndex]
-          let objTwo = listsArr[this.state.currentIndex - 1]
+            let objOne = listsArr[this.state.currentIndex]
+            let objTwo = listsArr[this.state.currentIndex - 1]
 
-          let tempObjOne = {
-            index: this.state.currentIndex - 1,
-            listCategoryName: objOne.listCategoryName,
-            listTitle: objOne.listTitle,
-            notesArr: objOne.notesArr
-          }
-          
-          let tempObjTwo = {
-            index: this.state.currentIndex,
-            listCategoryName: objTwo.listCategoryName,
-            listTitle: objTwo.listTitle,
-            notesArr: objTwo.notesArr
-          }
-    
-          listsArr[this.state.currentIndex] = tempObjTwo
-    
-          listsArr[this.state.currentIndex - 1] = tempObjOne
-          
-          console.log(listsArr)
+            let tempObjOne = {
+                index: this.state.currentIndex - 1,
+                listCategoryName: objOne.listCategoryName,
+                listTitle: objOne.listTitle,
+                notesArr: objOne.notesArr
+            }
 
-          this.setState({listsArr, currentIndex: this.state.currentIndex - 1})
-    
-          await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+            let tempObjTwo = {
+                index: this.state.currentIndex,
+                listCategoryName: objTwo.listCategoryName,
+                listTitle: objTwo.listTitle,
+                notesArr: objTwo.notesArr
+            }
+
+            listsArr[this.state.currentIndex] = tempObjTwo
+
+            listsArr[this.state.currentIndex - 1] = tempObjOne
+
+            console.log(listsArr)
+
+            this.setState({ listsArr, currentIndex: this.state.currentIndex - 1 })
+
+            await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
         }
     }
 
@@ -195,37 +195,119 @@ export default class List extends React.Component {
         let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
 
         console.log(listsArr)
-    
+
         if (this.state.currentIndex < (listsArr.length - 1)) {
-          let objOne = listsArr[this.state.currentIndex]
-          let objTwo = listsArr[this.state.currentIndex + 1]
-          
-          let tempObjOne = {
-            index: this.state.currentIndex + 1,
+            let objOne = listsArr[this.state.currentIndex]
+            let objTwo = listsArr[this.state.currentIndex + 1]
+
+            let tempObjOne = {
+                index: this.state.currentIndex + 1,
+                listCategoryName: objOne.listCategoryName,
+                listTitle: objOne.listTitle,
+                notesArr: objOne.notesArr
+            }
+
+            let tempObjTwo = {
+                index: this.state.currentIndex,
+                listCategoryName: objTwo.listCategoryName,
+                listTitle: objTwo.listTitle,
+                notesArr: objTwo.notesArr
+            }
+
+            listsArr[this.state.currentIndex] = tempObjTwo
+
+            listsArr[this.state.currentIndex + 1] = tempObjOne
+
+            console.log(listsArr)
+
+            this.setState({ listsArr, currentIndex: this.state.currentIndex + 1 })
+
+            await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+        }
+    }
+
+    async moveListElementUpwards(listsArr) {
+        let objOne = listsArr[this.state.currentIndex]
+        let objTwo = listsArr[this.state.currentIndex - 2]
+
+        let tempObjOne = {
+            index: this.state.currentIndex - 2,
             listCategoryName: objOne.listCategoryName,
             listTitle: objOne.listTitle,
             notesArr: objOne.notesArr
-          }
-          
-          let tempObjTwo = {
+        }
+
+        let tempObjTwo = {
             index: this.state.currentIndex,
             listCategoryName: objTwo.listCategoryName,
             listTitle: objTwo.listTitle,
             notesArr: objTwo.notesArr
-          }
-    
-          listsArr[this.state.currentIndex] = tempObjTwo
-    
-          listsArr[this.state.currentIndex + 1] = tempObjOne
-          
-          console.log(listsArr)
+        }
 
-          this.setState({listsArr, currentIndex: this.state.currentIndex + 1})
-    
-          await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+        listsArr[this.state.currentIndex] = tempObjTwo
+
+        listsArr[this.state.currentIndex - 2] = tempObjOne
+
+        this.setState({ listsArr, currentIndex: this.state.currentIndex - 2 })
+
+        await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+    }
+
+    async changeListPositionUpwards() {
+        let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+
+        if (this.state.currentIndex % 2 == 0) {
+            if (this.state.currentIndex > 0) {
+                this.moveListElementUpwards(listsArr)
+            }
+        } else {
+            if (this.state.currentIndex > 1) {
+                this.moveListElementUpwards(listsArr)
+            }
         }
     }
-    
+
+    async moveListElementDownwards(listsArr) {
+        let objOne = listsArr[this.state.currentIndex]
+        let objTwo = listsArr[this.state.currentIndex + 2]
+
+        let tempObjOne = {
+            index: this.state.currentIndex + 2,
+            listCategoryName: objOne.listCategoryName,
+            listTitle: objOne.listTitle,
+            notesArr: objOne.notesArr
+        }
+
+        let tempObjTwo = {
+            index: this.state.currentIndex,
+            listCategoryName: objTwo.listCategoryName,
+            listTitle: objTwo.listTitle,
+            notesArr: objTwo.notesArr
+        }
+
+        listsArr[this.state.currentIndex] = tempObjTwo
+
+        listsArr[this.state.currentIndex + 2] = tempObjOne
+
+        this.setState({ listsArr, currentIndex: this.state.currentIndex + 2 })
+
+        await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
+    }
+
+    async changeListPositionDownwards() {
+        let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
+
+        if (this.state.currentIndex % 2 == 0) {
+            if (this.state.currentIndex < listsArr.length - 2) {
+                this.moveListElementDownwards(listsArr)
+            }
+        } else {
+            if (this.state.currentIndex < listsArr.length - 1) {
+                this.moveListElementDownwards(listsArr)
+            }
+        }
+    }
+
     render() {
         return (
             <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -236,23 +318,23 @@ export default class List extends React.Component {
                             <View style={{ position: 'absolute', zIndex: 40, top: 200, right: 20 }}>
                                 <View style={{ flexDirection: 'row' }}>
                                     <View style={{ justifyContent: 'center', marginRight: 5 }}>
-                                        <TouchableOpacity style={{ backgroundColor: '#000000', borderRadius: 10, padding: 10 }} onPress={() => {this.changeListPositionLeft()}}>
+                                        <TouchableOpacity style={{ backgroundColor: '#000000', borderRadius: 10, padding: 10 }} onPress={() => { this.changeListPositionLeft() }}>
                                             {/* onPress={() => { this.changeListPositionUpwards() }} */}
                                             <LeftArrow width="10" height="10" />
                                         </TouchableOpacity>
                                     </View>
                                     <View style={{ backgroundColor: '#000000', borderRadius: 10, padding: 10 }}>
-                                        <TouchableOpacity >
+                                        <TouchableOpacity onPress={() => { this.changeListPositionUpwards() }}>
                                             {/* onPress={() => { this.changeListPositionUpwards() }} */}
-                                            <UpArrow width="10" height="10" />
+                                            <UpArrow width="15" height="15" />
                                         </TouchableOpacity>
-                                        <TouchableOpacity style={{ marginTop: 10 }}>
+                                        <TouchableOpacity style={{ marginTop: 10 }}  onPress={() => { this.changeListPositionDownwards() }}>
                                             {/* onPress={() => { this.changeListPositionDownwrds() }} */}
-                                            <DownArrow width="10" height="10" />
+                                            <DownArrow width="15" height="15" />
                                         </TouchableOpacity>
                                     </View>
                                     <View style={{ justifyContent: 'center', marginLeft: 5 }}>
-                                        <TouchableOpacity style={{ backgroundColor: '#000000', borderRadius: 10, padding: 10 }} onPress={() => {this.changeListPositionRight()}}>
+                                        <TouchableOpacity style={{ backgroundColor: '#000000', borderRadius: 10, padding: 10 }} onPress={() => { this.changeListPositionRight() }}>
                                             {/* onPress={() => { this.changeListPositionUpwards() }} */}
                                             <RightArrow width="10" height="10" />
                                         </TouchableOpacity>
