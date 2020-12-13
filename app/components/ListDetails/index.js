@@ -46,15 +46,40 @@ export default class ListDetails extends React.Component {
       listCategoryName: "",
 
       changeListPositionViewVisible: false,
-      currentIndex: 0
+      currentIndex: 0,
+
+      titleEditFlag: 0 //If the flag is 0, textinput is in edit mode.
     }
   }
 
+  backAction = () => {
+    if (this.state.titleEditFlag == 0) {
+      this.props.route.params.loadListsData()
+      return false;
+    } else {
+      let returnValue = false
+      new Promise(async (resolve, reject) => {
+        await this.changeListTitle()
+        resolve(1)
+      }).then((result) => {
+        if (result == 1) {
+          this.props.route.params.loadListsData()
+        }
+      })
+    }
+  };
+
   componentWillUnmount() {
+    this.backHandler.remove();
     this.changeKeepAwake(false)
   }
 
   async componentDidMount() {
+    this.backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      this.backAction
+    );
+
     // await AsyncStorage.removeItem('notesArr')
     let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
 
@@ -385,7 +410,7 @@ export default class ListDetails extends React.Component {
         index: this.state.currentIndex - 1,
         noteText: objOne.noteText
       }
-      
+
       let tempObjTwo = {
         checkBoxChecked: objTwo.checkBoxChecked,
         counter: objTwo.counter,
@@ -397,7 +422,7 @@ export default class ListDetails extends React.Component {
 
       listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex - 1] = tempObjOne
 
-      this.setState({notesArr: listsArr[this.props.route.params.listIndex].notesArr, currentIndex: this.state.currentIndex - 1})
+      this.setState({ notesArr: listsArr[this.props.route.params.listIndex].notesArr, currentIndex: this.state.currentIndex - 1 })
 
       await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
     }
@@ -411,7 +436,7 @@ export default class ListDetails extends React.Component {
 
     // console.log(listsArr[this.props.route.params.listIndex].notesArr)
     if (this.state.currentIndex < (listsArr[this.props.route.params.listIndex].notesArr.length - 1)) {
-      
+
       let objOne = listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex]
       let objTwo = listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex + 1]
 
@@ -421,7 +446,7 @@ export default class ListDetails extends React.Component {
         index: this.state.currentIndex + 1,
         noteText: objOne.noteText
       }
-      
+
       let tempObjTwo = {
         checkBoxChecked: objTwo.checkBoxChecked,
         counter: objTwo.counter,
@@ -433,7 +458,7 @@ export default class ListDetails extends React.Component {
 
       listsArr[this.props.route.params.listIndex].notesArr[this.state.currentIndex + 1] = tempObjOne
 
-      this.setState({notesArr: listsArr[this.props.route.params.listIndex].notesArr, currentIndex: this.state.currentIndex + 1})
+      this.setState({ notesArr: listsArr[this.props.route.params.listIndex].notesArr, currentIndex: this.state.currentIndex + 1 })
 
       await AsyncStorage.setItem('listsArr', JSON.stringify(listsArr))
 
@@ -636,7 +661,7 @@ export default class ListDetails extends React.Component {
 
         <View style={{ flex: 1, paddingVertical: 20 }}>
           <View style={{ flexDirection: 'row', paddingBottom: 10, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: '#EBEBEB', marginBottom: 20 }}>
-            <TextInput style={{ flex: 1, fontSize: 20, fontWeight: 'bold', marginRight: 10 }} placeholder="Title" multiline={true} onBlur={() => { this.changeListTitle() }} onChangeText={(listTitle) => { this.setState({ listTitle }) }} value={this.state.listTitle} />
+            <TextInput style={{ flex: 1, fontSize: 20, fontWeight: 'bold', marginRight: 10 }} placeholder="Title" multiline={true} onBlur={() => { this.changeListTitle() }} onChangeText={(listTitle) => { this.setState({ listTitle }); this.state.titleEditFlag == 0 ? this.setState({ titleEditFlag: 1 }) : null }} value={this.state.listTitle} />
             <TouchableOpacity onPress={() => { this.verifyFilterApplyData() }}
               style={{ justifyContent: 'center' }}>
               <Filter width="20" height="20" />

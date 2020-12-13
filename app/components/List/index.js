@@ -60,15 +60,15 @@ export default class List extends React.Component {
     async componentDidMount() {
         // await AsyncStorage.removeItem('notesArr')
         // await AsyncStorage.removeItem('listsArr')
-        this.focusListener = this.props.navigation.addListener('focus', () => {
-            // do something
-            if (this.focusListenerFlag) {
-                this.loadListsData()
-                console.log('In Focus Inside')
-            }
-            this.focusListenerFlag = true
-            console.log('In Focus')
-        });
+        // this.focusListener = this.props.navigation.addListener('focus', () => {
+        //     // do something
+        //     if (this.focusListenerFlag) {
+        //         this.loadListsData()
+        //         console.log('In Focus Inside')
+        //     }
+        //     this.focusListenerFlag = true
+        //     console.log('In Focus')
+        // });
 
         console.log(this.focusListener)
 
@@ -79,7 +79,7 @@ export default class List extends React.Component {
     //     this.focusListener.remove()
     // }
 
-    async loadListsData() {
+    loadListsData = async () => {
         let listsArr = JSON.parse(await AsyncStorage.getItem('listsArr'))
 
         this.setState({
@@ -328,7 +328,7 @@ export default class List extends React.Component {
                                             {/* onPress={() => { this.changeListPositionUpwards() }} */}
                                             <UpArrow width="15" height="15" />
                                         </TouchableOpacity>
-                                        <TouchableOpacity style={{ marginTop: 10 }}  onPress={() => { this.changeListPositionDownwards() }}>
+                                        <TouchableOpacity style={{ marginTop: 10 }} onPress={() => { this.changeListPositionDownwards() }}>
                                             {/* onPress={() => { this.changeListPositionDownwrds() }} */}
                                             <DownArrow width="15" height="15" />
                                         </TouchableOpacity>
@@ -451,45 +451,105 @@ export default class List extends React.Component {
                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 20, color: '#EBEBEB', fontWeight: 'bold' }}>Add List</Text></View>
                             :
                             <ScrollView>
-                                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 20 }}>
-                                    {
-                                        this.state.listsArr.map((data, index) => (
-                                            <TouchableOpacity key={index}
-                                                onLongPress={() => { this.changeListPosition(data.index) }}
-                                                onPress={() => { this.props.navigation.navigate("ListDetails", { listIndex: data.index }) }}
-                                                style={[{
-                                                    shadowColor: "#000",
-                                                    shadowOffset: {
-                                                        width: 0,
-                                                        height: 2
-                                                    },
-                                                    shadowOpacity: 0.25,
-                                                    shadowRadius: 3.84,
-                                                    elevation: 2, width: '48%', height: 100, borderRadius: 10, marginTop: 10, padding: 10,
-                                                }, index % 2 == 0 ? { marginRight: '4%' } : null, index == this.state.listsArr.length - 1 ? { marginBottom: 65 } : { marginBottom: 10 }]}>
-                                                <View style={{ flexDirection: 'row', width: '100%' }}>
-                                                    <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>{data.listTitle}</Text>
-                                                    <TouchableOpacity onPress={() => { this.deleteList(data.index) }} style={{ justifyContent: 'center' }}>
-                                                        <Bin width={20} height={15} />
-                                                    </TouchableOpacity>
+                                <View style={{ flexDirection: 'row', marginHorizontal: 20 }}>
+                                    <View style={{ flexDirection: 'column', flex: 1, marginRight: 10 }}>
+                                        {
+                                            this.state.listsArr.map((data, index) => (
+                                                <View key={index}>
+                                                    {
+                                                        index % 2 == 0 ?
+                                                            <TouchableOpacity
+                                                                onLongPress={() => { this.changeListPosition(data.index) }}
+                                                                onPress={() => { this.props.navigation.navigate("ListDetails", { listIndex: data.index, loadListsData: this.loadListsData }) }}
+                                                                style={[{
+                                                                    shadowColor: "#000",
+                                                                    // shadowOffset: {
+                                                                    //     width: 0,
+                                                                    //     height: 2
+                                                                    // },
+                                                                    // shadowOpacity: 0.25,
+                                                                    // shadowRadius: 3.84,
+                                                                    flex: 0, flexGrow: 1,
+                                                                    flexShrink: 1,
+                                                                    elevation: 1, width: '98%', minHeight: 80, borderRadius: 10, marginTop: 10, padding: 10,
+                                                                }, index == this.state.listsArr.length - 1 ? { marginBottom: 65 } : { marginBottom: 10 }]}>
+                                                                <View style={{ flexDirection: 'row', width: '100%' }}>
+                                                                    <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>{data.listTitle}</Text>
+                                                                    <TouchableOpacity onPress={() => { this.deleteList(data.index) }} style={{ justifyContent: 'flex-start' }}>
+                                                                        <Bin width={20} height={15} />
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                                {
+                                                                    data.notesArr != "" ?
+                                                                        <View style={{ marginTop: 10 }}>
+                                                                            <Text>1. {data.notesArr[0].noteText.length > 11 ? data.notesArr[0].noteText.substring(0, 11) + '...' : data.notesArr[0].noteText}</Text>
+                                                                            {
+                                                                                typeof data.notesArr[1] !== 'undefined' ?
+                                                                                    <Text>2. {data.notesArr[1].noteText.length > 11 ? data.notesArr[1].noteText.substring(0, 11) + '...' : data.notesArr[1].noteText}</Text>
+                                                                                    :
+                                                                                    null
+                                                                            }
+                                                                        </View>
+                                                                        :
+                                                                        null
+                                                                }
+                                                            </TouchableOpacity>
+                                                            :
+                                                            null
+                                                    }
                                                 </View>
-                                                {
-                                                    data.notesArr != "" ?
-                                                        <View style={{ marginTop: 10 }}>
-                                                            <Text>1. {data.notesArr[0].noteText.length > 11 ? data.notesArr[0].noteText.substring(0, 11) + '...' : data.notesArr[0].noteText}</Text>
-                                                            {
-                                                                typeof data.notesArr[1] !== 'undefined' ?
-                                                                    <Text>2. {data.notesArr[1].noteText.length > 11 ? data.notesArr[1].noteText.substring(0, 11) + '...' : data.notesArr[1].noteText}</Text>
-                                                                    :
-                                                                    null
-                                                            }
-                                                        </View>
-                                                        :
-                                                        null
-                                                }
-                                            </TouchableOpacity>
-                                        ))
-                                    }
+                                            ))
+                                        }
+                                    </View>
+                                    <View style={{ flexDirection: 'column', flex: 1 }}>
+                                        {
+                                            this.state.listsArr.map((data, index) => (
+                                                <View key={index}>
+                                                    {
+                                                        index % 2 != 0 ?
+                                                            <TouchableOpacity
+                                                                onLongPress={() => { this.changeListPosition(data.index) }}
+                                                                onPress={() => { this.props.navigation.navigate("ListDetails", { listIndex: data.index, loadListsData: this.loadListsData }) }}
+                                                                style={[{
+                                                                    shadowColor: "#000",
+                                                                    // shadowOffset: {
+                                                                    //     width: 0,
+                                                                    //     height: 2
+                                                                    // },
+                                                                    // shadowOpacity: 0.25,
+                                                                    // shadowRadius: 3.84,
+                                                                    flex: 0, flexGrow: 1,
+                                                                    flexShrink: 1,
+                                                                    elevation: 1, width: '98%', minHeight: 80, borderRadius: 10, marginTop: 10, padding: 10,
+                                                                }, index == this.state.listsArr.length - 1 ? { marginBottom: 65 } : { marginBottom: 10 }]}>
+                                                                <View style={{ flexDirection: 'row', width: '100%' }}>
+                                                                    <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>{data.listTitle}</Text>
+                                                                    <TouchableOpacity onPress={() => { this.deleteList(data.index) }} style={{ justifyContent: 'flex-start' }}>
+                                                                        <Bin width={20} height={15} />
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                                {
+                                                                    data.notesArr != "" ?
+                                                                        <View style={{ marginTop: 10 }}>
+                                                                            <Text>1. {data.notesArr[0].noteText.length > 11 ? data.notesArr[0].noteText.substring(0, 11) + '...' : data.notesArr[0].noteText}</Text>
+                                                                            {
+                                                                                typeof data.notesArr[1] !== 'undefined' ?
+                                                                                    <Text>2. {data.notesArr[1].noteText.length > 11 ? data.notesArr[1].noteText.substring(0, 11) + '...' : data.notesArr[1].noteText}</Text>
+                                                                                    :
+                                                                                    null
+                                                                            }
+                                                                        </View>
+                                                                        :
+                                                                        null
+                                                                }
+                                                            </TouchableOpacity>
+                                                            :
+                                                            null
+                                                    }
+                                                </View>
+                                            ))
+                                        }
+                                    </View>
                                 </View>
                             </ScrollView>
 
