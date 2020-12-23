@@ -8,12 +8,10 @@
 import 'react-native-gesture-handler';
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import {
-  View,
-  Text,
-} from 'react-native';
-import HomeScreen from './app/components/HomeScreen'
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
+import { View, Text, StatusBar } from 'react-native';
+import List from './app/components/List'
+import ListDetails from './app/components/ListDetails'
 
 
 class SplashScreen extends React.Component {
@@ -23,15 +21,16 @@ class SplashScreen extends React.Component {
 
   componentDidMount() {
     setTimeout(() => {
-      this.props.navigation.navigate("HomeScreen")
+      this.props.navigation.navigate("List")
     }, 2000);
   }
 
   render() {
-    return(
-      <View style={{flex: 1, backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center'}}>
-        <Text style={{fontSize: 30, color: '#ffffff', fontFamily: 'DancingScript-Medium'}}>Happy</Text>
-        <Text style={{fontSize: 30, color: '#ffffff', fontFamily: 'DancingScript-Medium'}}>Birthday</Text>
+    return (
+      <View style={{ flex: 1, backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center' }}>
+        <StatusBar barStyle="light-content" backgroundColor="#000000" translucent={true} />
+        <Text style={{ fontSize: 30, color: '#ffffff', fontFamily: 'DancingScript-Medium' }}>List</Text>
+        <Text style={{ fontSize: 30, color: '#ffffff', fontFamily: 'DancingScript-Medium' }}>Tracker</Text>
       </View>
     )
   }
@@ -43,10 +42,19 @@ function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="SplashScreen" component={SplashScreen}  options={{headerShown: false}}/>
-        <Stack.Screen name="HomeScreen" component={HomeScreen} options={{headerShown: false}}/>
+        <Stack.Screen name="SplashScreen" component={SplashScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="List" component={List}
+          options={{
+            headerShown: false,
+            cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+          }} />
+        <Stack.Screen name="ListDetails" component={ListDetails}
+          options={{
+            headerShown: false,
+            cardStyleInterpolator: CardStyleInterpolators.forVerticalIOS,
+          }} />
       </Stack.Navigator>
-    </NavigationContainer>
+    </NavigationContainer >
   );
 }
 

@@ -462,16 +462,8 @@ export default class List extends React.Component {
                                                                 onLongPress={() => { this.changeListPosition(data.index) }}
                                                                 onPress={() => { this.props.navigation.navigate("ListDetails", { listIndex: data.index, loadListsData: this.loadListsData }) }}
                                                                 style={[{
-                                                                    shadowColor: "#000",
-                                                                    // shadowOffset: {
-                                                                    //     width: 0,
-                                                                    //     height: 2
-                                                                    // },
-                                                                    // shadowOpacity: 0.25,
-                                                                    // shadowRadius: 3.84,
-                                                                    flex: 0, flexGrow: 1,
-                                                                    flexShrink: 1,
-                                                                    elevation: 1, width: '98%', minHeight: 80, borderRadius: 10, marginTop: 10, padding: 10,
+                                                                    borderWidth: 1, borderColor: '#D3D3D3',
+                                                                    width: '98%', minHeight: 80, borderRadius: 10, marginTop: 10, padding: 10,
                                                                 }, index == this.state.listsArr.length - 1 ? { marginBottom: 65 } : { marginBottom: 10 }]}>
                                                                 <View style={{ flexDirection: 'row', width: '100%' }}>
                                                                     <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>{data.listTitle}</Text>
@@ -511,16 +503,8 @@ export default class List extends React.Component {
                                                                 onLongPress={() => { this.changeListPosition(data.index) }}
                                                                 onPress={() => { this.props.navigation.navigate("ListDetails", { listIndex: data.index, loadListsData: this.loadListsData }) }}
                                                                 style={[{
-                                                                    shadowColor: "#000",
-                                                                    // shadowOffset: {
-                                                                    //     width: 0,
-                                                                    //     height: 2
-                                                                    // },
-                                                                    // shadowOpacity: 0.25,
-                                                                    // shadowRadius: 3.84,
-                                                                    flex: 0, flexGrow: 1,
-                                                                    flexShrink: 1,
-                                                                    elevation: 1, width: '98%', minHeight: 80, borderRadius: 10, marginTop: 10, padding: 10,
+                                                                    borderWidth: 1, borderColor: '#D3D3D3',
+                                                                    width: '98%', minHeight: 80, borderRadius: 10, marginTop: 10, padding: 10,
                                                                 }, index == this.state.listsArr.length - 1 ? { marginBottom: 65 } : { marginBottom: 10 }]}>
                                                                 <View style={{ flexDirection: 'row', width: '100%' }}>
                                                                     <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>{data.listTitle}</Text>
