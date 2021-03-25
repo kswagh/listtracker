@@ -3,7 +3,6 @@ import { View, Text, BackHandler, TouchableOpacity, TextInput, ScrollView, Alert
 import CheckBox from 'react-native-check-box'
 import Modal from 'react-native-modal';
 import AsyncStorage from '@react-native-community/async-storage';
-import KeepAwake from 'react-native-keep-awake';
 import Toast from 'react-native-simple-toast';
 import Add from '../../assets/Images/add.svg'
 import Bin from '../../assets/Images/bin.svg'
@@ -14,6 +13,7 @@ import Filter from '../../assets/Images/filter.svg'
 import UpArrow from '../../assets/Images/up_arrow.svg'
 import DownArrow from '../../assets/Images/down_arrow.svg'
 import Checked from '../../assets/Images/checked.svg'
+import Back from '../../assets/Images/back.svg'
 import { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-simple-radio-button';
 
 const windowWidth = Dimensions.get('window').width;
@@ -71,7 +71,6 @@ export default class ListDetails extends React.Component {
 
   componentWillUnmount() {
     this.backHandler.remove();
-    this.changeKeepAwake(false)
   }
 
   async componentDidMount() {
@@ -90,14 +89,6 @@ export default class ListDetails extends React.Component {
       listCategoryName: listsArr[this.props.route.params.listIndex].listCategoryName,
       listTitle: listsArr[this.props.route.params.listIndex].listTitle
     })
-  }
-
-  changeKeepAwake(shouldBeAwake) {
-    if (shouldBeAwake) {
-      KeepAwake.activate();
-    } else {
-      KeepAwake.deactivate();
-    }
   }
 
   //function to add a note
@@ -649,6 +640,26 @@ export default class ListDetails extends React.Component {
         {/* Header Start */}
         <View style={{ paddingTop: 40, paddingRight: 20, paddingBottom: 20, paddingLeft: 20, backgroundColor: '#000000' }}>
           <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity onPress={() => {
+               console.log('In TouchableOpacity: ' + this.state.titleEditFlag)
+               if (this.state.titleEditFlag == 0) {
+                this.props.route.params.loadListsData()
+                this.props.navigation.goBack()
+                return false;
+              } else {
+                new Promise(async (resolve, reject) => {
+                  await this.changeListTitle()
+                  resolve(1)
+                }).then((result) => {
+                  if (result == 1) {
+                    this.props.route.params.loadListsData()
+                    this.props.navigation.goBack()
+                  }
+                })
+              } 
+               }} style={{ justifyContent: 'center' }}>
+              <Back width="30" height="30" />
+            </TouchableOpacity>
             <View style={{ flex: 1 }}>
               <Text style={{ color: '#ffffff', textTransform: 'capitalize', textAlign: 'center', fontWeight: 'bold', fontSize: 20 }}>List Tracker</Text>
             </View>

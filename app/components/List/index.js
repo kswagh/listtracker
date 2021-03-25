@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, BackHandler, TouchableOpacity, TextInput, Alert, Dimensions } from 'react-native';
+import { View, Text, BackHandler, TouchableOpacity, TextInput, Alert, Dimensions, Animated, Easing } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Modal from 'react-native-modal';
 import { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-simple-radio-button';
@@ -11,6 +11,7 @@ import DownArrow from '../../assets/Images/down_arrow.svg'
 import LeftArrow from '../../assets/Images/left_arrow.svg'
 import RightArrow from '../../assets/Images/right_arrow.svg'
 import Checked from '../../assets/Images/checked.svg'
+import Hamburger from '../../assets/Images/hamburger.svg'
 
 // import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
@@ -34,14 +35,27 @@ export default class List extends React.Component {
             modalFlag: 0,
 
             changeListPositionViewVisible: false,
-            currentIndex: 0
+            currentIndex: 0,
+
+            rotateHamFlag: false
         }
 
         BackHandler.addEventListener('hardwareBackPress', this.handleBackButton)
 
         this.focusListener = null
         this.focusListenerFlag = false
+        this.animated = new Animated.Value(0);
     }
+
+    animate = easing => {
+        this.animated.setValue(0);
+        Animated.timing(this.animated, {
+            toValue: 1,
+            duration: 300,
+            easing: Easing.linear, // Easing is an additional import from react-native
+            useNativeDriver: true
+        }).start();
+    };
 
     handleBackButton = () => {
         if (this.props.navigation.isFocused()) {
@@ -437,7 +451,17 @@ export default class List extends React.Component {
 
                 {/* Header Start */}
                 <View style={{ paddingTop: 40, paddingRight: 20, paddingBottom: 20, paddingLeft: 20, backgroundColor: '#000000' }}>
-                    <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => { this.props.navigation.openDrawer(); this.setState({ rotateHamFlag: true }); this.animate() }} style={[{ justifyContent: 'center' }, this.state.rotateHamFlag && {
+                            transform: [{
+                                rotate: this.animated.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: ['0deg', '180deg']
+                                })
+                            }]
+                        }]}>
+                            <Hamburger width="30" height="30" />
+                        </TouchableOpacity>
                         <View style={{ flex: 1 }}>
                             <Text style={{ color: '#ffffff', textTransform: 'capitalize', textAlign: 'center', fontWeight: 'bold', fontSize: 20 }}>List Tracker</Text>
                         </View>
